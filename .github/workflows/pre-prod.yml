@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./infrastructure/envs/pre-prod
+        working-directory: ./envs/pre-prod
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
