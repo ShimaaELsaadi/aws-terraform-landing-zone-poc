@@ -1,0 +1,62 @@
+name: Terraform - Pre-Prod with Backend
+
+on:
+  push:
+    branches:
+      - pre-prod
+
+jobs:
+  bootstrap-backend:
+    name: Bootstrap Backend (S3 + DynamoDB)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend-setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init (backend setup)
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan 
+
+      - name: Terraform Apply (Create S3 + DynamoDB)
+        run: terraform apply -auto-approve
+
+  deploy-pre-prod:
+    name: Deploy Pre-Prod Infrastructure
+    needs: bootstrap-backend  
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./envs/pre-prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init (Pre-Prod)
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="pre-prod.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -var-file="pre-prod.tfvars" -auto-approve
