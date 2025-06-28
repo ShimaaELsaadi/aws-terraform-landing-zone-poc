@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - staging
-
 jobs:
   deploy-pre-prod:
-    name: Deploy Pre-Prod Infrastructure
-    needs: bootstrap-backend  
+    name: Deploy Pre-Prod Infrastructure 
     runs-on: ubuntu-latest
     defaults:
       run:
