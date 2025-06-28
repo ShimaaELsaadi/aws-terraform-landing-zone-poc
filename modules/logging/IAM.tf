@@ -1,19 +1,22 @@
-resource "aws_iam_role" "vpc_flow_log_role" {
-  name = "poc-${var.environment}-flow-log-role"
+resource "aws_iam_role_policy" "vpc_flow_logs_policy" {
+  name = "poc-${var.environment}-vpc-flow-log-policy"
+  role = aws_iam_role.vpc_flow_log_role.id
 
-    tags = {
-        Name        = "poc-${var.environment}-flow-log-role"
-        Environment = var.environment
-    }
-    assume_role_policy = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
-      Principal = {
-        Service = "vpc-flow-logs.amazonaws.com" 
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ],
+        Resource = "*"
       }
-    }]
+    ]
   })
 }
 resource "aws_iam_role_policy_attachment" "vpc_flow_logs_policy" {
