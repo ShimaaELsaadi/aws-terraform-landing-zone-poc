@@ -1,4 +1,4 @@
-module "vpc" {
+module "network" {
   source = "../../modules/network"
   environment = var.environment
   vpc_config = {
@@ -11,7 +11,7 @@ module "vpc" {
     }
   }
 }
-module "instances" {
+module "compute" {
   source = "../../modules/compute"
   environment = var.environment
   vpc_id = module.vpc.vpc_id
