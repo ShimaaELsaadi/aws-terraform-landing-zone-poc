@@ -33,9 +33,14 @@ resource "aws_flow_log" "s3" {
   count                = var.environment == "prod" ? 1 : 0  
   log_destination      = aws_s3_bucket.central_logs[0].arn
   log_destination_type = "s3"
-  iam_role_arn         = aws_iam_role.vpc_flow_log_role.arn
   traffic_type         = "ALL"
   vpc_id               = var.vpc_id
+
+  tags = {
+    Name        = "poc-${var.environment}-s3-flow-logs"
+    Environment = var.environment
+  }
 }
+
 
 
