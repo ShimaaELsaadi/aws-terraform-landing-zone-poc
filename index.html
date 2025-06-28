@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Terraform Landing Zone POC - Complete Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #ff6b35;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .assignment-badge {
+            background: linear-gradient(45deg, #ff6b35, #f7971e);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .environments-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .env-card {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .env-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b35, #f7971e);
+        }
+
+        .env-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b35;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .env-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .env-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .pre-prod .env-icon {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .prod .env-icon {
+            background: linear-gradient(45deg, #00b894, #00a085);
+        }
+
+        .env-card h2 {
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+
+        .resource-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .resource-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding-left: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-list li:before {
+            content: "🔧";
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+
+        .resource-count {
+            background: #ff6b35;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .modules-section {
+            background: linear-gradient(145deg, #dfe6e9, #b2bec3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .modules-section h2 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #ff6b35;
+            padding-bottom: 15px;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .module-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .module-card:hover {
+            transform: scale(1.02);
+        }
+
+        .network-module {
+            border-left-color: #74b9ff;
+        }
+
+        .compute-module {
+            border-left-color: #00b894;
+        }
+
+        .logging-module {
+            border-left-color: #fdcb6e;
+        }
+
+        .monitoring-module {
+            border-left-color: #e17055;
+        }
+
+        .module-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .logging-services {
+            background: linear-gradient(145deg, #fd79a8, #e84393);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(253, 121, 168, 0.3);
+        }
+
+        .logging-services h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .logging-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .log-service {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .log-service:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .log-service h4 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            color: #ffeaa7;
+        }
+
+        .log-service ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .log-service li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .log-service li:before {
+            content: "📊";
+            position: absolute;
+            left: 0;
+        }
+
+        .cicd-pipeline {
+            background: linear-gradient(145deg, #a29bfe, #6c5ce7);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(162, 155, 254, 0.3);
+        }
+
+        .cicd-pipeline h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .pipeline-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .pipeline-step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .pipeline-step h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .naming-convention {
+            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.3);
+        }
+
+        .naming-convention h2 {
+            color: #e17055;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .naming-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .naming-example {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #e17055;
+        }
+
+        .architecture-flow {
+            background: linear-gradient(145deg, #fd79a8, #fdcb6e);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(253, 121, 168, 0.3);
+        }
+
+        .flow-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .flow-step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .flow-step:not(:last-child):after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            font-size: 2em;
+            color: white;
+        }
+
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(116, 185, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(116, 185, 255, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .project-info {
+            background: linear-gradient(145deg, #00b894, #00a085);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .github-link {
+            display: inline-block;
+            background: white;
+            color: #00a085;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .github-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .environments-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pipeline-flow {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .flow-step:after {
+                content: '↓';
+                right: auto;
+                bottom: -30px;
+            }
+
+            .logging-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AWS Terraform Landing Zone POC</h1>
+            <p>Complete DevOps Solution for X Company's Cloud Migration</p>
+            <div class="assignment-badge">AWS Terraform Landing Zone POC</div>
+        </div>
+
+        <div class="naming-convention">
+            <h2>📝 Resource Naming Convention</h2>
+            <p><strong>Pattern:</strong> <code>poc-&lt;env&gt;-&lt;resource&gt;</code> where env = pre-prod | prod</p>
+            <div class="naming-examples">
+                <div class="naming-example">poc-pre-prod-vpc</div>
+                <div class="naming-example">poc-prod-subnet1</div>
+                <div class="naming-example">poc-pre-prod-instance1</div>
+                <div class="naming-example">poc-prod-cloudwatch-logs</div>
+                <div class="naming-example">poc-prod-cloudtrail</div>
+                <div class="naming-example">poc-prod-config</div>
+            </div>
+        </div>
+
+        <div class="environments-section">
+            <div class="env-card pre-prod">
+                <div class="env-header">
+                    <div class="env-icon">DEV</div>
+                    <h2>Pre-Production Environment</h2>
+                </div>
+                <ul class="resource-list">
+                    <li>VPC with 1 Public Subnet <span class="resource-count">1</span></li>
+                    <li>EC2 t2.micro Instance <span class="resource-count">1</span></li>
+                    <li>Internet Gateway <span class="resource-count">1</span></li>
+                    <li>Security Groups <span class="resource-count">1</span></li>
+                    <li>Route Tables <span class="resource-count">1</span></li>
+                    <li>CloudWatch Log Groups <span class="resource-count">1</span></li>
+                </ul>
+            </div>
+
+            <div class="env-card prod">
+                <div class="env-header">
+                    <div class="env-icon">PROD</div>
+                    <h2>Production Environment</h2>
+                </div>
+                <ul class="resource-list">
+                    <li>VPC with 2 Public Subnets <span class="resource-count">2</span></li>
+                    <li>EC2 t2.micro Instances <span class="resource-count">2</span></li>
+                    <li>CloudWatch Log Groups <span class="resource-count">3</span></li>
+                    <li>S3 Bucket for Logs <span class="resource-count">1</span></li>
+                    <li>VPC Flow Logs <span class="resource-count">1</span></li>
+                    <li>CloudTrail <span class="resource-count">1</span></li>
+                    <li>AWS Config <span class="resource-count">1</span></li>
+                    <li>CloudWatch Alarms <span class="resource-count">5</span></li>
+                    <li>Internet Gateway <span class="resource-count">1</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="logging-services">
+            <h2>📊 AWS Logging & Monitoring Services</h2>
+            <div class="logging-grid">
+                <div class="log-service">
+                    <h4>🔍 CloudWatch Logs</h4>
+                    <ul>
+                        <li>Application Logs</li>
+                        <li>System Logs</li>
+                        <li>EC2 Instance Logs</li>
+                        <li>Custom Metrics</li>
+                        <li>Log Retention Policies</li>
+                    </ul>
+                </div>
+
+                <div class="log-service">
+                    <h4>🛡️ CloudTrail</h4>
+                    <ul>
+                        <li>API Call Logging</li>
+                        <li>Management Events</li>
+                        <li>Data Events</li>
+                        <li>S3 Log Storage</li>
+                        <li>Multi-Region Trail</li>
+                    </ul>
+                </div>
+
+                <div class="log-service">
+                    <h4>⚙️ AWS Config</h4>
+                    <ul>
+                        <li>Resource Configuration</li>
+                        <li>Compliance Monitoring</li>
+                        <li>Configuration History</li>
+                        <li>Change Notifications</li>
+                        <li>Rule Evaluations</li>
+                    </ul>
+                </div>
+
+                <div class="log-service">
+                    <h4>🌐 VPC Flow Logs</h4>
+                    <ul>
+                        <li>Network Traffic Monitoring</li>
+                        <li>Security Analysis</li>
+                        <li>Performance Troubleshooting</li>
+                        <li>S3 Storage Integration</li>
+                        <li>Custom Flow Format</li>
+                    </ul>
+                </div>
+
+                <div class="log-service">
+                    <h4>🚨 CloudWatch Alarms</h4>
+                    <ul>
+                        <li>CPU Utilization</li>
+                        <li>Memory Usage</li>
+                        <li>Disk Space</li>
+                        <li>Network Traffic</li>
+                        <li>Custom Metrics</li>
+                    </ul>
+                </div>
+
+                <div class="log-service">
+                    <h4>📈 CloudWatch Dashboards</h4>
+                    <ul>
+                        <li>Real-time Metrics</li>
+                        <li>Custom Visualizations</li>
+                        <li>Performance Graphs</li>
+                        <li>Resource Monitoring</li>
+                        <li>Operational Insights</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="modules-section">
+            <h2>🏗️ Terraform Modules Structure</h2>
+            <div class="modules-grid">
+                <div class="module-card network-module">
+                    <h3>🌐 Network Module</h3>
+                    <ul class="resource-list">
+                        <li>VPC Configuration</li>
+                        <li>Public Subnets (parameterized)</li>
+                        <li>Internet Gateway</li>
+                        <li>Route Tables</li>
+                        <li>Network ACLs</li>
+                        <li>VPC Flow Logs</li>
+                    </ul>
+                </div>
+
+                <div class="module-card compute-module">
+                    <h3>💻 Compute Module</h3>
+                    <ul class="resource-list">
+                        <li>EC2 Instances (parameterized)</li>
+                        <li>Security Groups</li>
+                        <li>Key Pairs</li>
+                        <li>User Data Scripts</li>
+                        <li>Instance Profiles</li>
+                        <li>CloudWatch Agent</li>
+                    </ul>
+                </div>
+
+                <div class="module-card logging-module">
+                    <h3>📊 Logging Module</h3>
+                    <ul class="resource-list">
+                        <li>CloudWatch Log Groups</li>
+                        <li>S3 Bucket for Logs</li>
+                        <li>VPC Flow Logs Configuration</li>
+                        <li>Log Retention Policies</li>
+                        <li>IAM Roles for Logging</li>
+                        <li>Log Stream Management</li>
+                    </ul>
+                </div>
+
+                <div class="module-card monitoring-module">
+                    <h3>📈 Monitoring Module</h3>
+                    <ul class="resource-list">
+                        <li>CloudTrail Configuration</li>
+                        <li>AWS Config Setup</li>
+                        <li>CloudWatch Alarms</li>
+                        <li>SNS Notifications</li>
+                        <li>Custom Dashboards</li>
+                        <li>Compliance Rules</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="cicd-pipeline">
+            <h2>🔄 CI/CD Pipeline Architecture</h2>
+            <p>Four separate automated pipelines using GitHub Actions</p>
+            
+            <div class="pipeline-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 25px;">
+                <div class="pipeline-card" style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <h3 style="color: #74b9ff; margin-bottom: 15px; text-align: center;">🔧 Backend Pipeline</h3>
+                    <div class="pipeline-steps" style="space-y: 10px;">
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">📦 Setup S3 Backend</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🔒 Create DynamoDB Lock Table</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">⚙️ Configure IAM Roles</div>
+                    </div>
+                </div>
+                
+                <div class="pipeline-card" style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <h3 style="color: #0984e3; margin-bottom: 15px; text-align: center;">🧪 Pre-Prod Pipeline</h3>
+                    <div class="pipeline-steps">
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🔧 Terraform Init</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">✅ Validate & Plan</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🚀 Apply to Pre-Prod</div>
+                    </div>
+                </div>
+                
+                <div class="pipeline-card" style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <h3 style="color: #00b894; margin-bottom: 15px; text-align: center;">🏭 Production Pipeline</h3>
+                    <div class="pipeline-steps">
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🔧 Terraform Init</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">✅ Validate & Plan</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🚀 Apply to Production</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-card" style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <h3 style="color: #fd79a8; margin-bottom: 15px; text-align: center;">📊 Monitoring Pipeline</h3>
+                    <div class="pipeline-steps">
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🔧 Setup Monitoring</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">📈 Deploy Dashboards</div>
+                        <div style="padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; margin: 8px 0;">🚨 Configure Alerts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="architecture-flow">
+            <h2>🏛️ Landing Zone Architecture Flow</h2>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div style="font-size: 1.5em;">📁</div>
+                    <div>Git Repo</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 1.5em;">⚙️</div>
+                    <div>GitHub Actions</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 1.5em;">🏗️</div>
+                    <div>Terraform</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 1.5em;">☁️</div>
+                    <div>AWS Resources</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 1.5em;">📊</div>
+                    <div>Monitoring</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-stats">
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div>Terraform Modules</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div>Environments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div>Free Tier</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div>CI/CD Pipelines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div>Logging Services</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div>CloudWatch Alarms</div>
+            </div>
+        </div>
+
+        <div class="project-info">
+            <h3>🎯 Assignment Deliverables</h3>
+            <p>✅ Terraform IaC with modular architecture<br>
+            ✅ Four automated CI/CD pipelines (Backend, Pre-Prod, Production, Monitoring)<br>
+            ✅ Comprehensive AWS logging and monitoring stack<br>
+            ✅ CloudTrail, Config, VPC Flow Logs, CloudWatch integration<br>
+            ✅ Real-time dashboards and alerting<br>
+            ✅ Comprehensive README with diagrams<br>
+            ✅ Free Tier compliant AWS resources<br>
+            ✅ Environment-specific configurations</p>
