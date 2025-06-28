@@ -16,7 +16,6 @@ resource "aws_subnet" "this" {
     Access = each.value.public ? "Public" : "Private"
   }
 }
-
 resource "aws_internet_gateway" "this" {
   count  = length(local.public_subnets) > 0 ? 1 : 0
   vpc_id = aws_vpc.this.id
