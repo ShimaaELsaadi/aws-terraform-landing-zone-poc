@@ -14,11 +14,11 @@ module "network" {
 module "compute" {
   source = "../../modules/compute"
   environment = var.environment
-  vpc_id = module.vpc.vpc_id
+  vpc_id = module.network.vpc_id
   instances = {
     instance1 = {
       instance_type = "t2.micro"
-      subnet_id = module.vpc.subnet_ids["subnet1"]
+      subnet_id = module.network.subnet_ids["subnet1"]
       key_pair_name = "instance-key-pair"
     }
   }
