@@ -395,25 +395,25 @@ This project is designed to be deployed to AWS using Terraform. Follow these ste
 
 The following diagram illustrates the high-level architecture of the AWS Landing Zone and the integrated CI/CD pipeline workflow:
 
-![AWS Landing Zone and CI/CD Pipeline Architecture](/home/ubuntu/aws_landing_zone_diagram.png)
+![AWS Landing Zone and CI/CD Pipeline Architecture](./assets/aws_landing_zone_diagram.png)
 
 ### Backend Setup Architecture
 
 This diagram illustrates the architecture provisioned by the `bootstrap-backend` branch, which sets up the Terraform remote state and locking mechanisms:
 
-![Terraform Backend Setup in AWS](/home/ubuntu/backend_setup_diagram.png)
+![Terraform Backend Setup in AWS](./assets/backend_setup_diagram.png)
 
 ### Pre-Production (Staging) Environment Architecture
 
 This diagram illustrates the architecture deployed by the `staging` branch (or the `envs/staging/` directory):
 
-![Pre-Production Architecture](/home/ubuntu/pre_prod_architecture.png)
+![Pre-Production Architecture](./assets/pre_prod_architecture.png)
 
 ### Production Environment Architecture
 
 This diagram illustrates the expected architecture for the production environment, including the additional logging components:
 
-![Production Architecture](/home/ubuntu/prod_architecture.png)
+![Production Architecture](./assets/prod_architecture.png)
 
 
 ## Links
