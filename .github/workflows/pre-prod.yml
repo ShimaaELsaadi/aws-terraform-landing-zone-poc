@@ -33,7 +33,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -var-file="pre-prod.tfvars"
+        run: terraform plan 
 
       - name: Terraform Apply
-        run: terraform apply -var-file="pre-prod.tfvars" -auto-approve
+        run: terraform apply  -auto-approve
